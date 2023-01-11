@@ -7,7 +7,7 @@ import Nav from "./components/Nav";
 
 const App = () => {
   return (
-    <div className="App">
+    <div className="app">
       <BrowserRouter>
         <Nav />
         <Routes>
