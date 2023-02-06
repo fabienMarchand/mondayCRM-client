@@ -1,49 +1,38 @@
-import React from "react";
+import React, { useEffect, useState, useContext } from "react";
+import axios from "axios";
 
 import TicketCard from "../components/TicketCard";
+import Categoriescontext from "../context";
 
 const Dashboard = () => {
-  const tickets = [
-    {
-      category: "Q1 2023",
-      color: "red",
-      title: "NFT safety 101 video",
-      owner: "Fab Marcha",
-      avatar:
-        "https://robohash.org/6a5fddeba4a7ece387230b3d563ceb69?set=set4&bgset=&size=400x400",
-      status: "done",
-      priority: 5,
-      progress: 100,
-      description: "Make a video with NFT safety",
-      timestamp: "2022-02-11T07:36:17+0000",
-    },
-    {
-      category: "Q1 2023",
-      color: "Green",
-      title: "NFT safety 102 video",
-      owner: "Fab Marcha",
-      avatar:
-        "https://robohash.org/6a5fddeba4a7ece387230b3d563ceb69?set=set4&bgset=&size=400x400",
-      status: "working on it",
-      priority: 2,
-      progress: 70,
-      description: "Make a video with NFT safety",
-      timestamp: "2022-02-13T07:36:17+0000",
-    },
-    {
-      category: "Q2 2023",
-      color: "blue",
-      title: "NFT safety 103 video",
-      owner: "Fab Marcha",
-      avatar:
-        "https://robohash.org/6a5fddeba4a7ece387230b3d563ceb69?set=set4&bgset=&size=400x400",
-      status: "work on it",
-      priority: 3,
-      progress: 10,
-      description: "Make a video with NFT safety",
-      timestamp: "2022-02-15T07:36:17+0000",
-    },
-  ];
+  const [tickets, setTickets] = useState(null);
+  const { categories, setCategories } = useContext(Categoriescontext);
+
+  useEffect(() => {
+    const getAllTickets = async () => {
+      const response = await axios.get("http://localhost:8000/tickets");
+
+      const dataObj = response.data.data;
+      const arrayOfKeys = Object.keys(dataObj);
+      const arrayOfData = Object.keys(dataObj).map((key) => dataObj[key]);
+      const formattedArray = [];
+      arrayOfKeys.forEach((key, index) => {
+        const formattedData = { ...arrayOfData[index] };
+        formattedData["documentID"] = key;
+        formattedArray.push(formattedData);
+      });
+      setTickets(formattedArray);
+    };
+
+    getAllTickets();
+  }, []);
+
+  useEffect(() => {
+    if (tickets) {
+      console.log("first : ", tickets);
+      setCategories([...new Set(tickets.map(({ category }) => category))])
+    }
+  }, [tickets]);
 
   const colors = [
     "rgb(255,179,186)",
@@ -53,9 +42,11 @@ const Dashboard = () => {
     "rgb(186,225,255)",
   ];
 
-  const uniqueCategories = [
-    ...new Set(tickets.map(({ category }) => category)),
-  ];
+  if (tickets) {
+    var uniqueCategories = [
+      ...new Set(tickets.map(({ category }) => category)),
+    ];
+  }
 
   return (
     <div className="dashboard">
@@ -70,6 +61,7 @@ const Dashboard = () => {
                 .filter((ticket) => ticket.category === uniqueCategory)
                 .map((filteredTicket, _index) => (
                   <TicketCard
+                    key={_index}
                     id={_index}
                     color={colors[categoryIndex] || colors[0]}
                     ticket={filteredTicket}
